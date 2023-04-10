@@ -1,0 +1,66 @@
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import javax.imageio.ImageIO;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.interactions.Actions;
+
+public class WebPageImageComparison {
+
+    public static void main(String[] args) throws IOException {
+        
+        // Set Chrome driver path
+        System.setProperty("webdriver.chrome.driver", "path/to/chromedriver");
+        
+        // Create Chrome driver object
+        WebDriver driver = new ChromeDriver();
+        
+        // Maximize the browser window
+        driver.manage().window().maximize();
+        
+        // Implicit wait to wait for page to load
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+        
+        // Open the URL to be compared
+        driver.get("https://example.com");
+        
+        // Take a screenshot of the page
+        File screenshotFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+        BufferedImage screenshotImage = ImageIO.read(screenshotFile);
+        
+        // Get the element to be compared
+        WebElement element = driver.findElement(By.xpath("//xpath/to/element"));
+        
+        // Get the position and size of the element
+        Point elementLocation = element.getLocation();
+        int elementWidth = element.getSize().getWidth();
+        int elementHeight = element.getSize().getHeight();
+        
+        // Crop the screenshot to the size of the element
+        BufferedImage elementImage = screenshotImage.getSubimage(
+                elementLocation.getX(), elementLocation.getY(), elementWidth, elementHeight);
+        
+        // Save the element image to a file
+        File elementFile = new File("path/to/element.png");
+        ImageIO.write(elementImage, "png", elementFile);
+        
+        // Close the browser
+        driver.quit();
+        
+        // Compare the saved element image with the expected image
+        BufferedImage expectedImage = ImageIO.read(new File("path/to/expected-image.png"));
+        BufferedImage actualImage = ImageIO.read(elementFile);
+        
+        ImageComparison imageComparison = new ImageComparison(expectedImage, actualImage);
+        
+        if (imageComparison.compare()) {
+            System.out.println("Images are the same.");
+        } else {
+            System.out.println("Images are different.");
+        }
+    }
+
+}
