@@ -1,0 +1,56 @@
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+public class ImageComparisonTest {
+    private WebDriver driver;
+    private String baseUrl = "https://www.example.com/";
+    private String expectedImage = "expected.png";
+    private String actualImage = "actual.png";
+    private int threshold = 10;
+
+    @BeforeMethod
+    public void setUp() {
+        // Set up the ChromeDriver
+        System.setProperty("webdriver.chrome.driver", "path/to/chromedriver.exe");
+        driver = new ChromeDriver();
+    }
+
+    @AfterMethod
+    public void tearDown() {
+        // Quit the WebDriver
+        driver.quit();
+    }
+
+    @Test
+    public void testImageComparison() throws IOException {
+        // Navigate to the web page
+        driver.get(baseUrl);
+
+        // Get the element containing the image to compare
+        WebElement element = driver.findElement(By.cssSelector("img"));
+
+        // Get the expected image from a file
+        File expectedFile = new File("path/to/" + expectedImage);
+        BufferedImage expectedImage = ImageIO.read(expectedFile);
+
+        // Get the actual image from the element
+        BufferedImage actualImage = ImageIO.read(element.getScreenshotAs(OutputType.FILE));
+
+        // Compare the images using a threshold
+        ImageComparison comparison = new ImageComparison(expectedImage, actualImage, threshold);
+        boolean result = comparison.compare();
+
+        // Assert the result
+        Assert.assertTrue(result, "The images do not match.");
+    }
+}
